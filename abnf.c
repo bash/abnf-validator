@@ -263,7 +263,8 @@ int main(int argc, char **argv)
     int hexmode, tokentype, line;
     int plevel = 0, blevel = 0;
     int bused, bsize, amount;
-    struct rulename *lastrule;
+	struct rulename *lastrule;
+	int has_err = 0;
 
     /* initialize hex table */
     memset(hex_table, 16, sizeof (hex_table));
@@ -520,9 +521,11 @@ int main(int argc, char **argv)
     /* final warnings */
     if (plevel) {
 	printf("Error at end of text: Unbalanced parenthesis\n");
+	has_err = 1;
     }
     if (blevel) {
 	printf("Error at end of text: Unbalanced square brackets\n");
+	has_err = 1;
     }
 
     /* deal with last rule on last line */
@@ -536,14 +539,20 @@ int main(int argc, char **argv)
 	while (lastrule) {
 	    if (!lastrule->defined) {
 		printf("undefined rule: %s\n", lastrule->data);
+		has_err = 1;
 	    }
 	    if (!lastrule->referenced) {
 		printf("unreferenced rule: %s\n", lastrule->data);
+		has_err = 1;
 	    }
 
 	    lastrule = lastrule->next;
 	}
-    }
+	}
+
+	if (has_err == 1) {
+		exit(1);
+	}
 
     printf("ABNF validation (version 1.0) completed\n");
 
