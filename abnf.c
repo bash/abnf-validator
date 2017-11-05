@@ -265,6 +265,7 @@ int main(int argc, char **argv)
     int bused, bsize, amount;
 	struct rulename *lastrule;
 	int has_err = 0;
+	struct rulename *first_rule = NULL;
 
     /* initialize hex table */
     memset(hex_table, 16, sizeof (hex_table));
@@ -388,6 +389,7 @@ int main(int argc, char **argv)
 	    
 	  case RULENAME:
 	    lastrule = hashfind(ptr, nptr - ptr);
+	    if (first_rule == NULL) first_rule = lastrule;
 	    break;
 
 	  case HEXMODE:
@@ -435,10 +437,8 @@ int main(int argc, char **argv)
 	has_err = 1;
     }
 
-    /* deal with last rule on last line */
-    if (lastrule) {
-	lastrule->referenced = 1;
-    }
+    /* the first rule always counts as referenced */
+    if (first_rule) first_rule->referenced = 1;
 
     /* list undefined and unreferenced rules */
     for (line = 0; line < HTSIZE; ++line) {
