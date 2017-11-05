@@ -255,7 +255,7 @@ struct rulename *hashfind(const char *ptr, int len)
 
 int main(int argc, char **argv)
 {
-    int web_cgi = 0, verbose = 0;
+    int verbose = 0;
     const unsigned char *uscan;
     char *buf, *name, *src, *dst, *linestart;
     char *ptr, *nptr;
@@ -282,30 +282,23 @@ int main(int argc, char **argv)
     /* get program name */
     name = strrchr(*argv, '/');
     name = name == NULL ? *argv : name + 1;
-    if (strncmp("web", name, 3) == 0) web_cgi = 1;
 
     /* parse args */
     while (*++argv != NULL && **argv == '-') switch ((*argv)[1]) {
-      case 'w':
-	web_cgi = 1;
-	break;
-
       case 'v':
 	verbose = 1;
 	break;
 
       case 'h':
-	printf("%s [-h] [-w]\n", name);
+	printf("%s [-h] [-v]\n", name);
+	printf("  -v  enable verbose output\n");
 	printf("  -h  display this help\n");
-	printf("  -w  input is web CGI encoded\n");
 	exit(0);
 
       default:
 	fprintf(stderr, "Invalid arguments, type `%s -h' for usage\n", name);
 	exit(1);
     }
-
-    if (web_cgi) printf("Content-Type: text/plain\n\n");
     
     /* read the data into memory */
     bsize = 4096;
@@ -333,92 +326,6 @@ int main(int argc, char **argv)
 	exit(1);
     }
     buf[bused] = '\0';
-	
-    /* remove web CGI grunge */
-    if (web_cgi) {
-	for (src = buf; *src != '\0' && !isspace(*src) &&
-	     *src != ':' && *src != '='; ++src)
-	    ;
-	if (*src == '=') {
-	    ++src;
-	    for (dst = buf; *src != '&' && *src != '\0'; ++src, ++dst) {
-		if (*src == '%') {
-		    *dst = (hex_table[(unsigned char)src[1]] << 4) +
-			hex_table[(unsigned char)src[2]];
-		    src += 2;
-		} else if (*src == '+') {
-		    *dst = ' ';
-		} else {
-		    *dst = *src;
-		}
-	    }
-	    *dst = '\0';
-	    bused = dst - buf;
-	}
-    }
-
-    /* remove xml RFC grunge */
-    for (src = buf; *src == ' ' || *src == '\t'; ++src)
-	;
-    if (*src == '<' && src[1] == '?') {
-	for (dst = buf; *src != '\0'; ++src) {
-	    if (*src == '\r' || *src == '\n') {
-		*dst++ = *src;
-	    } else if (src[0] == '<' && src[1] == 'a' &&
-		       (strncmp(src, "<artwork type=\"abnf\">", 21) == 0
-			|| strncmp(src, "<artwork type='abnf'>", 21) == 0)) {
-		src += 21;
-		while (*src != '\0') {
-		    if (src[0] == '<' && src[1] == '!'
-			&& strncmp(src, "<![CDATA[", 9) == 0) {
-			src += 9;
-			while (*src != '\0'
-			       && (src[0] != ']' || src[1] != ']' ||
-				   src[2] != '>')) {
-			    *dst++ = *src++;
-			}
-			src += 3;
-			continue;
-		    }
-		    if (src[0] == '<' && src[1] == '/'
-			&& strncmp(src, "</artwork>", 10) == 0) {
-			src += 10;
-			break;
-		    }
-		    if (src[0] == '&') {
-			if (strncmp(src, "&gt;", 4) == 0) {
-			    *dst++ = '>';
-			    src += 4;
-			    continue;
-			}
-			if (strncmp(src, "&lt;", 4) == 0) {
-			    *dst++ = '<';
-			    src += 4;
-			    continue;
-			}
-			if (strncmp(src, "&amp;", 5) == 0) {
-			    *dst++ = '&';
-			    src += 5;
-			    continue;
-			}
-			if (strncmp(src, "&apos;", 6) == 0) {
-			    *dst++ = '\'';
-			    src += 6;
-			    continue;
-			}
-			if (strncmp(src, "&quot;", 6) == 0) {
-			    *dst++ = '"';
-			    src += 6;
-			    continue;
-			}
-		    }
-		    *dst++ = *src++;
-		}
-		continue;
-	    }
-	}
-	*dst = '\0';
-    }
 
     /* process lines */
     ptr = linestart = buf;
