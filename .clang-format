@@ -1,0 +1,5 @@
+AlignEscapedNewlinesLeft: true
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+IndentWidth: 4
+ColumnLimit: 0
