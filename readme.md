@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/squid-lang/abnf-validator.svg?branch=master)](https://travis-ci.org/squid-lang/abnf-validator)
 
-This is a fork of [Chris Newman's ABNF Validator](http://www.apps.ietf.org/content/chris-newmans-abnf-validator), which is public domain, with some opinionated modifications.
+This is a fork of [Chris Newman's ABNF Validator](https://web.archive.org/web/20181228051239/https://www.apps.ietf.org/content/chris-newmans-abnf-validator), which is public domain, with some opinionated modifications.
 
 The modified code is public domain.
 
